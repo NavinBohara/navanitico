@@ -58,6 +58,31 @@ const CalculatorSuite = () => {
     returns: 12
   });
 
+  // Goal Planning Calculator State
+  const [goalData, setGoalData] = useState({
+    goalAmount: 1000000,
+    currentSavings: 100000,
+    monthlyInvestment: 10000,
+    expectedReturns: 12,
+    timePeriod: 60
+  });
+
+  // Loan Eligibility Calculator State
+  const [loanData, setLoanData] = useState({
+    monthlyIncome: 100000,
+    existingEMI: 20000,
+    interestRate: 10,
+    tenure: 240,
+    loanType: 'home'
+  });
+
+  // Emergency Fund Calculator State
+  const [emergencyData, setEmergencyData] = useState({
+    monthlyExpenses: 50000,
+    monthsCoverage: 6,
+    currentSavings: 50000
+  });
+
   const calculators = [
     { id: 'emi', name: 'EMI Calculator', icon: CurrencyDollarIcon, color: 'from-blue-500 to-blue-600' },
     { id: 'sip', name: 'SIP Calculator', icon: ArrowTrendingUpIcon, color: 'from-green-500 to-green-600' },
@@ -165,6 +190,56 @@ const CalculatorSuite = () => {
       corpusRequired: Math.round(corpusRequired),
       monthlySIP: Math.round(monthlySIP),
       futureMonthlyExpenses: Math.round(futureMonthlyExpenses)
+    };
+  };
+
+  // Goal Planning Calculation
+  const calculateGoal = () => {
+    const { goalAmount, currentSavings, monthlyInvestment, expectedReturns, timePeriod } = goalData;
+    const monthlyRate = expectedReturns / (12 * 100);
+    const futureValueOfCurrentSavings = currentSavings * Math.pow(1 + monthlyRate, timePeriod);
+    const futureValueOfSIP = monthlyInvestment * (((Math.pow(1 + monthlyRate, timePeriod) - 1) / monthlyRate) * (1 + monthlyRate));
+    const totalFutureValue = futureValueOfCurrentSavings + futureValueOfSIP;
+    const shortfall = Math.max(0, goalAmount - totalFutureValue);
+    const surplus = Math.max(0, totalFutureValue - goalAmount);
+    
+    return {
+      totalFutureValue: Math.round(totalFutureValue),
+      shortfall: Math.round(shortfall),
+      surplus: Math.round(surplus),
+      futureValueOfCurrentSavings: Math.round(futureValueOfCurrentSavings),
+      futureValueOfSIP: Math.round(futureValueOfSIP)
+    };
+  };
+
+  // Loan Eligibility Calculation
+  const calculateLoanEligibility = () => {
+    const { monthlyIncome, existingEMI, interestRate, tenure, loanType } = loanData;
+    const maxEMI = monthlyIncome * (loanType === 'home' ? 0.4 : 0.5); // 40% for home, 50% for others
+    const availableEMI = maxEMI - existingEMI;
+    const monthlyRate = interestRate / (12 * 100);
+    const loanAmount = availableEMI * ((Math.pow(1 + monthlyRate, tenure) - 1) / (monthlyRate * Math.pow(1 + monthlyRate, tenure)));
+    
+    return {
+      maxEMI: Math.round(maxEMI),
+      availableEMI: Math.round(Math.max(0, availableEMI)),
+      eligibleLoanAmount: Math.round(Math.max(0, loanAmount))
+    };
+  };
+
+  // Emergency Fund Calculation
+  const calculateEmergencyFund = () => {
+    const { monthlyExpenses, monthsCoverage, currentSavings } = emergencyData;
+    const targetAmount = monthlyExpenses * monthsCoverage;
+    const shortfall = Math.max(0, targetAmount - currentSavings);
+    const surplus = Math.max(0, currentSavings - targetAmount);
+    const coverageMonths = Math.round((currentSavings / monthlyExpenses) * 10) / 10;
+    
+    return {
+      targetAmount: Math.round(targetAmount),
+      shortfall: Math.round(shortfall),
+      surplus: Math.round(surplus),
+      coverageMonths: coverageMonths
     };
   };
 
@@ -364,6 +439,783 @@ const CalculatorSuite = () => {
           </div>
         );
 
+      case 'fd':
+        const fdResult = calculateFD();
+        return (
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white">Fixed Deposit Calculator</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Principal Amount (₹)
+                </label>
+                <input
+                  type="range"
+                  min="1000"
+                  max="10000000"
+                  step="1000"
+                  value={fdData.principal}
+                  onChange={(e) => setFdData(prev => ({ ...prev, principal: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>₹1K</span>
+                  <span className="font-bold">₹{fdData.principal.toLocaleString()}</span>
+                  <span>₹1Cr</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Interest Rate (% per annum)
+                </label>
+                <input
+                  type="range"
+                  min="3"
+                  max="10"
+                  step="0.1"
+                  value={fdData.rate}
+                  onChange={(e) => setFdData(prev => ({ ...prev, rate: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>3%</span>
+                  <span className="font-bold">{fdData.rate}%</span>
+                  <span>10%</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Tenure (months)
+                </label>
+                <input
+                  type="range"
+                  min="1"
+                  max="120"
+                  step="1"
+                  value={fdData.tenure}
+                  onChange={(e) => setFdData(prev => ({ ...prev, tenure: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>1 month</span>
+                  <span className="font-bold">{fdData.tenure} months ({Math.round(fdData.tenure / 12 * 10) / 10} years)</span>
+                  <span>10 years</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30 rounded-2xl p-6">
+              <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Results</h4>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Maturity Amount</span>
+                  <span className="text-2xl font-bold text-yellow-600">₹{fdResult.maturityAmount.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Interest Earned</span>
+                  <span className="text-lg font-bold text-green-600">₹{fdResult.interest.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>Tip:</strong> FDs offer guaranteed returns and are ideal for risk-averse investors. Consider tax implications on interest income.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'ppf':
+        const ppfResult = calculatePPF();
+        return (
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white">PPF Calculator</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Monthly Contribution (₹)
+                </label>
+                <input
+                  type="range"
+                  min="500"
+                  max="12500"
+                  step="100"
+                  value={ppfData.monthlyAmount}
+                  onChange={(e) => setPpfData(prev => ({ ...prev, monthlyAmount: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>₹500</span>
+                  <span className="font-bold">₹{ppfData.monthlyAmount.toLocaleString()}</span>
+                  <span>₹12,500</span>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Maximum annual contribution: ₹1.5L</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Investment Period (years)
+                </label>
+                <input
+                  type="range"
+                  min="15"
+                  max="50"
+                  step="1"
+                  value={ppfData.tenure}
+                  onChange={(e) => setPpfData(prev => ({ ...prev, tenure: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>15 years</span>
+                  <span className="font-bold">{ppfData.tenure} years</span>
+                  <span>50 years</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-2xl p-6">
+              <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Results</h4>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Maturity Amount</span>
+                  <span className="text-2xl font-bold text-purple-600">₹{ppfResult.maturityAmount.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Total Investment</span>
+                  <span className="text-lg font-bold text-gray-800 dark:text-white">₹{ppfResult.totalInvestment.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Total Returns</span>
+                  <span className="text-lg font-bold text-green-600">₹{ppfResult.totalReturns.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/30 rounded-lg">
+                <p className="text-sm text-green-800 dark:text-green-200">
+                  <strong>Tip:</strong> PPF offers tax-free returns and is EEE (Exempt-Exempt-Exempt). Current rate: 7.1% p.a.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'tax':
+        const taxResult = calculateTax();
+        return (
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white">Income Tax Calculator</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Annual Income (₹)
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="5000000"
+                  step="10000"
+                  value={taxData.income}
+                  onChange={(e) => setTaxData(prev => ({ ...prev, income: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>₹0</span>
+                  <span className="font-bold">₹{taxData.income.toLocaleString()}</span>
+                  <span>₹50L</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Tax Regime
+                </label>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setTaxData(prev => ({ ...prev, regime: 'old' }))}
+                    className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
+                      taxData.regime === 'old'
+                        ? 'bg-red-500 text-white border-red-500'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
+                    }`}
+                  >
+                    Old Regime
+                  </button>
+                  <button
+                    onClick={() => setTaxData(prev => ({ ...prev, regime: 'new' }))}
+                    className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
+                      taxData.regime === 'new'
+                        ? 'bg-red-500 text-white border-red-500'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
+                    }`}
+                  >
+                    New Regime
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-2xl p-6">
+              <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Tax Calculation</h4>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Taxable Income</span>
+                  <span className="text-lg font-bold text-gray-800 dark:text-white">₹{taxData.income.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Income Tax</span>
+                  <span className="text-lg font-bold text-red-600">₹{taxResult.tax.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Cess (4%)</span>
+                  <span className="text-lg font-bold text-red-600">₹{taxResult.cess.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Total Tax</span>
+                  <span className="text-2xl font-bold text-red-600">₹{taxResult.totalTax.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 bg-green-50 dark:bg-green-900/30 rounded-lg shadow">
+                  <span className="font-medium text-green-800 dark:text-green-200">Net Income</span>
+                  <span className="text-xl font-bold text-green-600">₹{taxResult.netIncome.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <strong>Note:</strong> This is a simplified calculation. Actual tax may vary based on deductions, exemptions, and rebates.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'retirement':
+        const retirementResult = calculateRetirement();
+        return (
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white">Retirement Planner</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Current Age
+                </label>
+                <input
+                  type="range"
+                  min="20"
+                  max="60"
+                  step="1"
+                  value={retirementData.currentAge}
+                  onChange={(e) => setRetirementData(prev => ({ ...prev, currentAge: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>20</span>
+                  <span className="font-bold">{retirementData.currentAge} years</span>
+                  <span>60</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Retirement Age
+                </label>
+                <input
+                  type="range"
+                  min="50"
+                  max="70"
+                  step="1"
+                  value={retirementData.retirementAge}
+                  onChange={(e) => setRetirementData(prev => ({ ...prev, retirementAge: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>50</span>
+                  <span className="font-bold">{retirementData.retirementAge} years</span>
+                  <span>70</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Current Monthly Expenses (₹)
+                </label>
+                <input
+                  type="range"
+                  min="10000"
+                  max="200000"
+                  step="5000"
+                  value={retirementData.monthlyExpenses}
+                  onChange={(e) => setRetirementData(prev => ({ ...prev, monthlyExpenses: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>₹10K</span>
+                  <span className="font-bold">₹{retirementData.monthlyExpenses.toLocaleString()}</span>
+                  <span>₹2L</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Expected Inflation (% per annum)
+                </label>
+                <input
+                  type="range"
+                  min="3"
+                  max="10"
+                  step="0.5"
+                  value={retirementData.inflation}
+                  onChange={(e) => setRetirementData(prev => ({ ...prev, inflation: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>3%</span>
+                  <span className="font-bold">{retirementData.inflation}%</span>
+                  <span>10%</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Expected Returns (% per annum)
+                </label>
+                <input
+                  type="range"
+                  min="8"
+                  max="15"
+                  step="0.5"
+                  value={retirementData.returns}
+                  onChange={(e) => setRetirementData(prev => ({ ...prev, returns: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>8%</span>
+                  <span className="font-bold">{retirementData.returns}%</span>
+                  <span>15%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/30 dark:to-indigo-800/30 rounded-2xl p-6">
+              <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Retirement Plan</h4>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Future Monthly Expenses</span>
+                  <span className="text-lg font-bold text-indigo-600">₹{retirementResult.futureMonthlyExpenses.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Corpus Required</span>
+                  <span className="text-2xl font-bold text-indigo-600">₹{retirementResult.corpusRequired.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Monthly SIP Needed</span>
+                  <span className="text-xl font-bold text-green-600">₹{retirementResult.monthlySIP.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>Tip:</strong> Start saving early for retirement. The earlier you start, the less you need to invest monthly due to compounding.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'goal':
+        const goalResult = calculateGoal();
+        return (
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white">Goal Planning Calculator</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Goal Amount (₹)
+                </label>
+                <input
+                  type="range"
+                  min="10000"
+                  max="10000000"
+                  step="10000"
+                  value={goalData.goalAmount}
+                  onChange={(e) => setGoalData(prev => ({ ...prev, goalAmount: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>₹10K</span>
+                  <span className="font-bold">₹{goalData.goalAmount.toLocaleString()}</span>
+                  <span>₹1Cr</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Current Savings (₹)
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max={goalData.goalAmount}
+                  step="1000"
+                  value={goalData.currentSavings}
+                  onChange={(e) => setGoalData(prev => ({ ...prev, currentSavings: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>₹0</span>
+                  <span className="font-bold">₹{goalData.currentSavings.toLocaleString()}</span>
+                  <span>₹{goalData.goalAmount.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Monthly Investment (₹)
+                </label>
+                <input
+                  type="range"
+                  min="1000"
+                  max="100000"
+                  step="1000"
+                  value={goalData.monthlyInvestment}
+                  onChange={(e) => setGoalData(prev => ({ ...prev, monthlyInvestment: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>₹1K</span>
+                  <span className="font-bold">₹{goalData.monthlyInvestment.toLocaleString()}</span>
+                  <span>₹1L</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Expected Returns (% per annum)
+                </label>
+                <input
+                  type="range"
+                  min="6"
+                  max="18"
+                  step="0.5"
+                  value={goalData.expectedReturns}
+                  onChange={(e) => setGoalData(prev => ({ ...prev, expectedReturns: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>6%</span>
+                  <span className="font-bold">{goalData.expectedReturns}%</span>
+                  <span>18%</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Time Period (months)
+                </label>
+                <input
+                  type="range"
+                  min="12"
+                  max="360"
+                  step="12"
+                  value={goalData.timePeriod}
+                  onChange={(e) => setGoalData(prev => ({ ...prev, timePeriod: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>1 year</span>
+                  <span className="font-bold">{goalData.timePeriod} months ({Math.round(goalData.timePeriod / 12)} years)</span>
+                  <span>30 years</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-900/30 dark:to-pink-800/30 rounded-2xl p-6">
+              <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Goal Analysis</h4>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Total Future Value</span>
+                  <span className="text-2xl font-bold text-pink-600">₹{goalResult.totalFutureValue.toLocaleString()}</span>
+                </div>
+                
+                {goalResult.shortfall > 0 ? (
+                  <div className="flex justify-between items-center p-4 bg-red-50 dark:bg-red-900/30 rounded-lg shadow">
+                    <span className="font-medium text-red-800 dark:text-red-200">Shortfall</span>
+                    <span className="text-xl font-bold text-red-600">₹{goalResult.shortfall.toLocaleString()}</span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center p-4 bg-green-50 dark:bg-green-900/30 rounded-lg shadow">
+                    <span className="font-medium text-green-800 dark:text-green-200">Surplus</span>
+                    <span className="text-xl font-bold text-green-600">₹{goalResult.surplus.toLocaleString()}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>Tip:</strong> Increase monthly investment or extend time period to achieve your goal faster.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'loan':
+        const loanResult = calculateLoanEligibility();
+        return (
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white">Loan Eligibility Calculator</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Monthly Income (₹)
+                </label>
+                <input
+                  type="range"
+                  min="20000"
+                  max="500000"
+                  step="5000"
+                  value={loanData.monthlyIncome}
+                  onChange={(e) => setLoanData(prev => ({ ...prev, monthlyIncome: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>₹20K</span>
+                  <span className="font-bold">₹{loanData.monthlyIncome.toLocaleString()}</span>
+                  <span>₹5L</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Existing EMI (₹)
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max={Math.round(loanData.monthlyIncome * 0.5)}
+                  step="1000"
+                  value={loanData.existingEMI}
+                  onChange={(e) => setLoanData(prev => ({ ...prev, existingEMI: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>₹0</span>
+                  <span className="font-bold">₹{loanData.existingEMI.toLocaleString()}</span>
+                  <span>₹{Math.round(loanData.monthlyIncome * 0.5).toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Interest Rate (% per annum)
+                </label>
+                <input
+                  type="range"
+                  min="6"
+                  max="18"
+                  step="0.1"
+                  value={loanData.interestRate}
+                  onChange={(e) => setLoanData(prev => ({ ...prev, interestRate: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>6%</span>
+                  <span className="font-bold">{loanData.interestRate}%</span>
+                  <span>18%</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Loan Tenure (months)
+                </label>
+                <input
+                  type="range"
+                  min="12"
+                  max="360"
+                  step="12"
+                  value={loanData.tenure}
+                  onChange={(e) => setLoanData(prev => ({ ...prev, tenure: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>1 year</span>
+                  <span className="font-bold">{loanData.tenure} months ({Math.round(loanData.tenure / 12)} years)</span>
+                  <span>30 years</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Loan Type
+                </label>
+                <select
+                  value={loanData.loanType}
+                  onChange={(e) => setLoanData(prev => ({ ...prev, loanType: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+                >
+                  <option value="home">Home Loan</option>
+                  <option value="personal">Personal Loan</option>
+                  <option value="car">Car Loan</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/30 dark:to-teal-800/30 rounded-2xl p-6">
+              <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Eligibility Results</h4>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Max EMI Capacity</span>
+                  <span className="text-lg font-bold text-teal-600">₹{loanResult.maxEMI.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Available EMI</span>
+                  <span className="text-lg font-bold text-blue-600">₹{loanResult.availableEMI.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 bg-green-50 dark:bg-green-900/30 rounded-lg shadow">
+                  <span className="font-medium text-green-800 dark:text-green-200">Eligible Loan Amount</span>
+                  <span className="text-2xl font-bold text-green-600">₹{loanResult.eligibleLoanAmount.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <strong>Note:</strong> Actual eligibility may vary based on credit score, employment type, and other factors considered by lenders.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'emergency':
+        const emergencyResult = calculateEmergencyFund();
+        return (
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white">Emergency Fund Calculator</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Monthly Expenses (₹)
+                </label>
+                <input
+                  type="range"
+                  min="10000"
+                  max="200000"
+                  step="5000"
+                  value={emergencyData.monthlyExpenses}
+                  onChange={(e) => setEmergencyData(prev => ({ ...prev, monthlyExpenses: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>₹10K</span>
+                  <span className="font-bold">₹{emergencyData.monthlyExpenses.toLocaleString()}</span>
+                  <span>₹2L</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Desired Coverage (months)
+                </label>
+                <input
+                  type="range"
+                  min="3"
+                  max="12"
+                  step="1"
+                  value={emergencyData.monthsCoverage}
+                  onChange={(e) => setEmergencyData(prev => ({ ...prev, monthsCoverage: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>3 months</span>
+                  <span className="font-bold">{emergencyData.monthsCoverage} months</span>
+                  <span>12 months</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Current Savings (₹)
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max={emergencyData.monthlyExpenses * 12}
+                  step="1000"
+                  value={emergencyData.currentSavings}
+                  onChange={(e) => setEmergencyData(prev => ({ ...prev, currentSavings: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <span>₹0</span>
+                  <span className="font-bold">₹{emergencyData.currentSavings.toLocaleString()}</span>
+                  <span>₹{(emergencyData.monthlyExpenses * 12).toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 rounded-2xl p-6">
+              <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Emergency Fund Status</h4>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Target Amount</span>
+                  <span className="text-2xl font-bold text-orange-600">₹{emergencyResult.targetAmount.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Current Coverage</span>
+                  <span className="text-lg font-bold text-gray-800 dark:text-white">{emergencyResult.coverageMonths} months</span>
+                </div>
+                
+                {emergencyResult.shortfall > 0 ? (
+                  <div className="flex justify-between items-center p-4 bg-red-50 dark:bg-red-900/30 rounded-lg shadow">
+                    <span className="font-medium text-red-800 dark:text-red-200">Shortfall</span>
+                    <span className="text-xl font-bold text-red-600">₹{emergencyResult.shortfall.toLocaleString()}</span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center p-4 bg-green-50 dark:bg-green-900/30 rounded-lg shadow">
+                    <span className="font-medium text-green-800 dark:text-green-200">Surplus</span>
+                    <span className="text-xl font-bold text-green-600">₹{emergencyResult.surplus.toLocaleString()}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>Tip:</strong> Aim for 3-6 months of expenses as emergency fund. Keep it in liquid assets like savings account or FDs.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
       default:
         return (
           <div className="text-center py-12">
@@ -372,7 +1224,7 @@ const CalculatorSuite = () => {
               Calculator Coming Soon
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              This calculator is under development. Please try EMI or SIP calculator.
+              This calculator is under development. Please try other calculators.
             </p>
           </div>
         );
