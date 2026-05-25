@@ -6,6 +6,19 @@ The platform combines financial education, budgeting, calculators, AI chatbot su
 
 ---
 
+# 📸 Screenshots
+
+Add screenshots here:
+
+* Dashboard
+* Budget Planner
+* AI Chatbot
+* Financial Calculators
+* Game Module
+* Live Financial News
+
+---
+
 # 🌟 Features
 
 ## 📘 Financial Learning Module
@@ -227,9 +240,6 @@ The project is deployed using Netlify.
 ```bash
 (https://navanitico.netlify.app/)
 ```
-
----
-
 
 ---
 
