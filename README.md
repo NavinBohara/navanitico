@@ -12,13 +12,13 @@ The platform combines financial education, budgeting, calculators, AI chatbot su
 ### Dashboard
 
 <p align="center">
-  <img src="Homepage.png" width="900">
+  <img src="Dashboard.png" width="900">
 </p>
 
 ### Budget Planner
 
 <p align="center">
-  <img src="Offers.png" width="900">
+  <img src="Budget Planner.png" width="900">
 </p>
 
 ### AI Chatbot
@@ -30,19 +30,19 @@ The platform combines financial education, budgeting, calculators, AI chatbot su
 ### Financial Calculators
 
 <p align="center">
-  <img src="Products.png" width="900">
+  <img src="AI Chatbot.png" width="900">
 </p>
 
 ### Game Module
 
 <p align="center">
-  <img src="Products.png" width="900">
+  <img src="Game Module.png" width="900">
 </p>
 
 ### Live Financial News
 
 <p align="center">
-  <img src="Products.png" width="900">
+  <img src="Live Financial News.png" width="900">
 </p>
 
 ---
