@@ -30,7 +30,7 @@ The platform combines financial education, budgeting, calculators, AI chatbot su
 ### Financial Calculators
 
 <p align="center">
-  <img src="AI Chatbot.png" width="900">
+  <img src="Financial Calculators.png" width="900">
 </p>
 
 ### Game Module
