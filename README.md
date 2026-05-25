@@ -230,16 +230,6 @@ The project is deployed using Netlify.
 
 ---
 
-# 📸 Screenshots
-
-Add screenshots here:
-
-* Dashboard
-* Budget Planner
-* AI Chatbot
-* Financial Calculators
-* Game Module
-* Live Financial News
 
 ---
 
