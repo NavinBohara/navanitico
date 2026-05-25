@@ -131,7 +131,7 @@ NavaNiti/
 ## 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/NavaNiti.git
+git clone (https://github.com/NavinBohara/navanitico)
 ```
 
 ---
@@ -157,10 +157,10 @@ npm install
 Create a `.env` file in the root directory:
 
 ```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_key
-VITE_GEMINI_API_KEY=your_gemini_api_key
-VITE_FINNHUB_API_KEY=your_finnhub_api_key
+VITE_SUPABASE_URL=*PVT*
+VITE_SUPABASE_ANON_KEY=*PVT*
+VITE_GEMINI_API_KEY=*PVT*
+VITE_FINNHUB_API_KEY=*PVT*
 ```
 
 ---
@@ -225,7 +225,7 @@ The project is deployed using Netlify.
 ## Live Demo
 
 ```bash
-https://your-project-link.netlify.app
+(https://navanitico.netlify.app/)
 ```
 
 ---
