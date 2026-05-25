@@ -47,8 +47,6 @@ The platform combines financial education, budgeting, calculators, AI chatbot su
 
 ---
 
----
-
 # 🌟 Features
 
 ## 📘 Financial Learning Module
