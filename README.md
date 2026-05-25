@@ -266,7 +266,7 @@ The project is deployed using Netlify.
 ## Live Demo
 
 ```bash
-(https://navanitico.netlify.app/)
+[(https://navanitico.netlify.app/)](https://navanitico.netlify.app/)
 ```
 
 ---
