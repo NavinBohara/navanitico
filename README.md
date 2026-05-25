@@ -8,14 +8,44 @@ The platform combines financial education, budgeting, calculators, AI chatbot su
 
 # 📸 Screenshots
 
-Add screenshots here:
 
-* Dashboard
-* Budget Planner
-* AI Chatbot
-* Financial Calculators
-* Game Module
-* Live Financial News
+### Dashboard
+
+<p align="center">
+  <img src="Homepage.png" width="900">
+</p>
+
+### Budget Planner
+
+<p align="center">
+  <img src="Offers.png" width="900">
+</p>
+
+### AI Chatbot
+
+<p align="center">
+  <img src="Products.png" width="900">
+</p>
+
+### Financial Calculators
+
+<p align="center">
+  <img src="Products.png" width="900">
+</p>
+
+### Game Module
+
+<p align="center">
+  <img src="Products.png" width="900">
+</p>
+
+### Live Financial News
+
+<p align="center">
+  <img src="Products.png" width="900">
+</p>
+
+---
 
 ---
 
